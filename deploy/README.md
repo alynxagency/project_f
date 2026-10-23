@@ -7,7 +7,7 @@ k3s + CNPG + ArgoCD deployment of project-f.
 - **Production URL:** `https://hub.tryalynx.com`
 - **GHCR image:** `ghcr.io/alynxagency/project_f`
 
-Change `aLynx-agency` throughout the repo if you're using a different GitHub org:
+Change `alynxagency` throughout the repo if you're using a different GitHub org:
 
 ```bash
 grep -RIl "alynxagency/project_f" | xargs sed -i 's#alynxagency/project_f#your-org/project_f#g'
@@ -73,7 +73,7 @@ kubectl create namespace project-f-production
 # (create it in project-f-staging, project-f-production and argocd; cert-manager is not used)
 
 # Traefik: global HTTP→HTTPS redirect
-kubectl apply -f https://raw.githubusercontent.com/aLynx-agency/project_f/main/deploy/k8s/base/traefik-config.yaml
+kubectl apply -f https://raw.githubusercontent.com/alynxagency/project_f/main/deploy/k8s/base/traefik-config.yaml
 # ...or apply from the local clone:
 #   kubectl apply -f deploy/k8s/base/traefik-config.yaml
 
