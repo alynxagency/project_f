@@ -33,10 +33,10 @@ How the pieces of project_f fit together — enough to debug and reason about th
    ┌────────────────────────────────────────────────────────────┐
    │                    k3s cluster (Oracle Cloud VM)           │
    │                                                            │
-   │   ┌───────────────┐    ┌───────────────┐                   │
-   │   │  Traefik      │────│ cert-manager  │─── Let's Encrypt  │
-   │   │  (ingress)    │    │  (TLS)        │    HTTP-01        │
-   │   └───┬───────┬───┘    └───────────────┘                   │
+   │   ┌───────────────┐                                        │
+   │   │  Traefik      │  TLS: tryalynx-origin-tls              │
+   │   │  (ingress)    │       (Cloudflare Origin Cert)         │
+   │   └───┬───────┬───┘                                        │
    │       │       │                                            │
    │   staging  production                                      │
    │     ns       ns                                            │
@@ -138,11 +138,10 @@ Runs as an ArgoCD **PreSync hook** Job (`deploy/k8s/base/app/migrate-job.yaml`) 
 
 ### TLS
 
-cert-manager + Let's Encrypt HTTP-01 challenge. Traefik terminates TLS in front of every ingress.
+Shared Cloudflare Origin Certificate (secret `tryalynx-origin-tls`). Traefik terminates TLS in front of every ingress.
 
-- `deploy/k8s/base/cluster-issuer.yaml` — Let's Encrypt production issuer.
 - `deploy/k8s/base/traefik-config.yaml` — global HTTP→HTTPS redirect.
-- Port 80 must be open on the k3s host for the HTTP-01 challenge (even though prod traffic runs on 443).
+- Port 80 must be open on the k3s host for the HTTP→HTTPS redirect (prod traffic runs on 443).
 
 ### ArgoCD
 

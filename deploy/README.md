@@ -1,6 +1,6 @@
 # Deploy
 
-k3s + CNPG + cert-manager + ArgoCD deployment of project-f.
+k3s + CNPG + ArgoCD deployment of project-f.
 
 - **Node public IP:** `158.101.3.6`
 - **Staging URL:** `https://staging-hub.tryalynx.com`
@@ -49,17 +49,13 @@ dig +short hub.tryalynx.com staging-hub.tryalynx.com
 
 ### 2. Firewall on the k3s host
 
-Ports 80 and 443 open to `0.0.0.0/0`. Port 80 is required for cert-manager's HTTP-01 challenge (even though production traffic runs on 443).
+Ports 80 and 443 open to `0.0.0.0/0`. Port 80 serves the global HTTP→HTTPS redirect.
 
 ### 3. Install cluster-level components (once per cluster)
 
 Run these on the k3s host:
 
 ```bash
-# cert-manager (TLS via Let's Encrypt)
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.2/cert-manager.yaml
-kubectl -n cert-manager wait --for=condition=Available deploy --all --timeout=180s
-
 # CloudNative-PG operator (Postgres)
 kubectl apply --server-side -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.24/releases/cnpg-1.24.1.yaml
 kubectl -n cnpg-system wait --for=condition=Available deploy/cnpg-controller-manager --timeout=120s
@@ -73,10 +69,8 @@ kubectl -n argocd wait --for=condition=Available deploy --all --timeout=180s
 kubectl create namespace project-f-staging
 kubectl create namespace project-f-production
 
-# ClusterIssuer (Let's Encrypt account, harsh@alynx.agency)
-kubectl apply -f https://raw.githubusercontent.com/aLynx-agency/project_f/main/deploy/k8s/base/cluster-issuer.yaml
-# ...or apply from the local clone:
-#   kubectl apply -f deploy/k8s/base/cluster-issuer.yaml
+# TLS: shared Cloudflare Origin Certificate secret `tryalynx-origin-tls`
+# (create it in project-f-staging, project-f-production and argocd; cert-manager is not used)
 
 # Traefik: global HTTP→HTTPS redirect
 kubectl apply -f https://raw.githubusercontent.com/aLynx-agency/project_f/main/deploy/k8s/base/traefik-config.yaml
@@ -269,7 +263,7 @@ git push origin main
    ↓ CI commits kustomization.yaml bump to main  [skip ci]
    ↓ ArgoCD sees the commit within ~3 min
    ↓ Syncs to project-f-staging namespace
-   ↓ cert-manager issues/reuses cert for staging-hub.tryalynx.com
+   ↓ Traefik serves tryalynx-origin-tls for staging-hub.tryalynx.com
 ```
 
 **Production (manual promotion):**
@@ -339,7 +333,7 @@ curl -sS https://hub.tryalynx.com/api/health
 # → {"status":"ok"}
 ```
 
-Both should return HTTP 200 with a valid Let's Encrypt cert (green padlock in browser).
+Both should return HTTP 200 with a valid cert (green padlock in browser).
 
 ## Later hardening
 
