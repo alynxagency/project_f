@@ -110,7 +110,6 @@ deploy/k8s/
   base/
     app/         Deployment, Service, Ingress, migrate-Job
     postgres/    CNPG Cluster + ScheduledBackup
-    cluster-issuer.yaml
     traefik-config.yaml
     argocd-ingress.yaml
   overlays/
