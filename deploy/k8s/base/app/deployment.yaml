@@ -89,7 +89,7 @@ spec:
                 secretKeyRef:
                   name: project-f-secrets
                   key: RESEND_API_KEY
-                  optional: true
+                  optional: false
           resources:
             requests:
               cpu: 100m
