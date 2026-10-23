@@ -81,7 +81,7 @@ Each environment needs its own OAuth client:
 1. Google Cloud Console → APIs & Services → Credentials → Create OAuth 2.0 Client ID
 2. Application type: Web application
 3. Authorized redirect URI: `${BETTER_AUTH_URL}/api/auth/callback/google`
-   - Staging: `https://staging.hub.tryalynx.com/api/auth/callback/google`
+   - Staging: `https://staging-hub.tryalynx.com/api/auth/callback/google`
    - Production: `https://hub.tryalynx.com/api/auth/callback/google`
 
 ## DB schema

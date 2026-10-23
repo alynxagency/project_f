@@ -70,7 +70,7 @@ git push origin main
    ↓ CI: commit kustomization.yaml image-tag bump to main with [skip ci]
    ↓ ArgoCD polls (~3 min) and sees the bump
    ↓ ArgoCD Sync → PreSync Job runs db migrations → app pods roll
-   ↓ Traefik routes staging.hub.tryalynx.com → new pod
+   ↓ Traefik routes staging-hub.tryalynx.com → new pod
 ```
 
 **Production (manual promotion):**
