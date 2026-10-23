@@ -5,12 +5,12 @@ k3s + CNPG + cert-manager + ArgoCD deployment of project-f.
 - **Node public IP:** `158.101.3.6`
 - **Staging URL:** `https://staging-hub.tryalynx.com`
 - **Production URL:** `https://hub.tryalynx.com`
-- **GHCR image:** `ghcr.io/alynx-agency/project_f`
+- **GHCR image:** `ghcr.io/alynxagency/project_f`
 
 Change `aLynx-agency` throughout the repo if you're using a different GitHub org:
 
 ```bash
-grep -RIl "alynx-agency/project_f" | xargs sed -i 's#alynx-agency/project_f#your-org/project_f#g'
+grep -RIl "alynxagency/project_f" | xargs sed -i 's#alynxagency/project_f#your-org/project_f#g'
 ```
 
 ---
@@ -327,7 +327,7 @@ kubectl -n project-f-staging logs -f deploy/project-f
 kubectl -n project-f-staging exec -it postgres-1 -- psql -U project_f
 
 # Rollback via ArgoCD UI: pick the previous revision → Sync. Or force one image tag:
-kubectl -n project-f-staging set image deploy/project-f app=ghcr.io/alynx-agency/project_f:staging-<older-sha>
+kubectl -n project-f-staging set image deploy/project-f app=ghcr.io/alynxagency/project_f:staging-<older-sha>
 ```
 
 ## Verifying it's live

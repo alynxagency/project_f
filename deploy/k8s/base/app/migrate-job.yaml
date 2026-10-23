@@ -16,7 +16,7 @@ spec:
         runAsGroup: 1001
       containers:
         - name: migrate
-          image: ghcr.io/alynx-agency/project_f:latest
+          image: ghcr.io/alynxagency/project_f:latest
           command: ["node", "migrate.js"]
           env:
             - name: DATABASE_URL
