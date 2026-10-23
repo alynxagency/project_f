@@ -159,7 +159,7 @@ kubectl -n project-f-staging create secret generic postgres-backup-s3 \
 
 ### 5. App runtime secrets (per environment)
 
-CNPG auto-creates `postgres-app` secret with the app-user credentials. Wire that plus the auth/OAuth keys into the app's secret. Required keys (pod won't start without them): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. Optional: `RESEND_API_KEY`, `SENTRY_*`.
+CNPG auto-creates `postgres-app` secret with the app-user credentials. Wire that plus the auth/OAuth keys into the app's secret. Required keys (pod won't start without them): `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`. Optional: `SENTRY_*`.
 
 ```bash
 # Generate a fresh Better Auth secret for each environment
@@ -171,26 +171,23 @@ STAGING_PASS=$(kubectl -n project-f-staging get secret postgres-app -o jsonpath=
 kubectl -n project-f-staging create secret generic project-f-secrets \
   --from-literal=DATABASE_URL="postgres://project_f:${STAGING_PASS}@postgres-rw:5432/project_f?sslmode=require" \
   --from-literal=BETTER_AUTH_SECRET="${STAGING_AUTH_SECRET}" \
-  --from-literal=BETTER_AUTH_URL="https://staging.tryalynx.com" \
+  --from-literal=BETTER_AUTH_URL="https://staging-hub.tryalynx.com" \
   --from-literal=GOOGLE_CLIENT_ID="<staging-google-client-id>" \
-  --from-literal=GOOGLE_CLIENT_SECRET="<staging-google-client-secret>"
+  --from-literal=GOOGLE_CLIENT_SECRET="<staging-google-client-secret>" \
+  --from-literal=RESEND_API_KEY="<resend-api-key>"
 
 # Production
 PROD_PASS=$(kubectl -n project-f-production get secret postgres-app -o jsonpath='{.data.password}' | base64 -d)
 kubectl -n project-f-production create secret generic project-f-secrets \
   --from-literal=DATABASE_URL="postgres://project_f:${PROD_PASS}@postgres-rw:5432/project_f?sslmode=require" \
   --from-literal=BETTER_AUTH_SECRET="${PROD_AUTH_SECRET}" \
-  --from-literal=BETTER_AUTH_URL="https://app.tryalynx.com" \
+  --from-literal=BETTER_AUTH_URL="https://hub.tryalynx.com" \
   --from-literal=GOOGLE_CLIENT_ID="<prod-google-client-id>" \
-  --from-literal=GOOGLE_CLIENT_SECRET="<prod-google-client-secret>"
+  --from-literal=GOOGLE_CLIENT_SECRET="<prod-google-client-secret>" \
+  --from-literal=RESEND_API_KEY="<resend-api-key>"
 ```
 
-Patch in optional runtime values (Resend for email, Sentry for server-side error reporting) once you have them:
-
-```bash
-kubectl -n project-f-staging patch secret project-f-secrets \
-  --patch='{"stringData":{"RESEND_API_KEY":"..."}}'
-```
+`BETTER_AUTH_URL` must exactly match the public host of that environment, and `RESEND_API_KEY` must be non-empty (empty values fail env validation).
 
 **Sentry credentials — two places, two purposes:**
 
@@ -199,6 +196,8 @@ kubectl -n project-f-staging patch secret project-f-secrets \
 | GitHub Actions → **Variables**           | `NEXT_PUBLIC_SENTRY_DSN`, `NEXT_PUBLIC_APP_URL`, `SENTRY_ORG`, `SENTRY_PROJECT` | `NEXT_PUBLIC_*` is baked into the client bundle at `docker build` time; Sentry org/project label the source-map upload |
 | GitHub Actions → **Secrets**             | `SENTRY_AUTH_TOKEN`                                                             | Used at build time to upload source maps to Sentry                                                                     |
 | k8s `project-f-secrets` (patch as below) | `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (optional)                  | Runtime access from server-side code, if ever needed                                                                   |
+
+`NEXT_PUBLIC_APP_URL` is set per GitHub environment (Settings → Environments), not at repo level: `staging` = `https://staging-hub.tryalynx.com`, `production` = `https://hub.tryalynx.com`.
 
 Client-side events flow **directly to sentry.io** (no tunnel route — Turbopack in Next 16 doesn't auto-generate one). Browser ad blockers may drop them; most users don't run aggressive blockers, and server-side errors are unaffected.
 
@@ -294,7 +293,7 @@ kubectl -n project-f-staging get secret project-f-secrets -o jsonpath='{.data.BE
 kubectl -n project-f-staging patch secret project-f-secrets \
   -p='{"stringData":{
     "BETTER_AUTH_SECRET":"<value>",
-    "BETTER_AUTH_URL":"https://staging.tryalynx.com",
+    "BETTER_AUTH_URL":"https://staging-hub.tryalynx.com",
     "GOOGLE_CLIENT_ID":"<value>",
     "GOOGLE_CLIENT_SECRET":"<value>",
     "RESEND_API_KEY":"<value>"
