@@ -1,4 +1,5 @@
-# Exposes the ArgoCD UI at https://cd.tryalynx.com behind Traefik + Let's Encrypt.
+# Exposes the ArgoCD UI at https://cd.tryalynx.com behind Traefik, using the shared
+# Cloudflare Origin Certificate (secret tryalynx-origin-tls must exist in namespace argocd).
 # Apply once (cluster-level, not per-env):
 #   kubectl apply -f deploy/k8s/base/argocd-ingress.yaml
 #   kubectl -n argocd rollout restart deploy/argocd-server
@@ -23,7 +24,6 @@ metadata:
   name: argocd-server
   namespace: argocd
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
@@ -42,4 +42,4 @@ spec:
   tls:
     - hosts:
         - cd.tryalynx.com
-      secretName: argocd-server-tls
+      secretName: tryalynx-origin-tls
